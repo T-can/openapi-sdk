@@ -187,7 +187,7 @@ jobs:
         uses: messense/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          manylinux: auto
+          manylinux: 2_28
           args: -i ${{ matrix.python-version }} --release --out dist --no-sdist -m python/Cargo.toml
       - uses: uraimo/run-on-arch-action@v2.2.0
         if: matrix.target != 'ppc64'
