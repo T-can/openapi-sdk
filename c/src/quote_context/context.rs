@@ -1,4 +1,8 @@
-use std::{ffi::c_void, os::raw::c_char, sync::Arc};
+use std::{
+    ffi::{c_void, CString},
+    os::raw::c_char,
+    sync::Arc,
+};
 
 use longport::{
     quote::{
@@ -7,6 +11,7 @@ use longport::{
     },
     QuoteContext,
 };
+use once_cell::sync::OnceCell;
 use parking_lot::Mutex;
 
 use crate::{
@@ -62,6 +67,7 @@ unsafe impl Send for CQuoteContextState {}
 /// Quote context
 pub struct CQuoteContext {
     ctx: QuoteContext,
+    quote_level: OnceCell<CString>,
     state: Mutex<CQuoteContextState>,
 }
 
@@ -94,7 +100,11 @@ pub unsafe extern "C" fn lb_quote_context_new(
                 callbacks: Callbacks::default(),
                 free_userdata: None,
             });
-            let arc_ctx = Arc::new(CQuoteContext { ctx, state });
+            let arc_ctx = Arc::new(CQuoteContext {
+                ctx,
+                quote_level: OnceCell::new(),
+                state,
+            });
             let weak_ctx = Arc::downgrade(&arc_ctx);
             let ctx = Arc::into_raw(arc_ctx);
 
@@ -229,6 +239,19 @@ pub unsafe extern "C" fn lb_quote_context_set_free_userdata_func(
     f: CFreeUserDataFunc,
 ) {
     (*ctx).state.lock().free_userdata = f;
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn lb_quote_context_member_id(ctx: *const CQuoteContext) -> i64 {
+    (*ctx).ctx.member_id()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn lb_quote_context_quote_level(ctx: *const CQuoteContext) -> *const c_char {
+    let quote_level = (*ctx)
+        .quote_level
+        .get_or_init(|| CString::new((*ctx).ctx.quote_level()).unwrap());
+    quote_level.as_ptr() as *const _
 }
 
 /// Set quote callback, after receiving the quote data push, it will call back

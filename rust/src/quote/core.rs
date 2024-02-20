@@ -6,7 +6,7 @@ use std::{
 use longport_candlesticks::{IsHalfTradeDay, Type, UpdateAction};
 use longport_httpcli::HttpClient;
 use longport_proto::quote::{
-    AdjustType, MarketTradeDayRequest, MarketTradeDayResponse, MultiSecurityRequest, Period,
+    self, AdjustType, MarketTradeDayRequest, MarketTradeDayResponse, MultiSecurityRequest, Period,
     SecurityCandlestickRequest, SecurityCandlestickResponse, SecurityStaticInfoResponse,
     SubscribeRequest, TradeSession, UnsubscribeRequest,
 };
@@ -121,6 +121,7 @@ impl<'a> IsHalfTradeDay for HalfDays<'a> {
 
 pub(crate) struct Core {
     config: Arc<Config>,
+    rate_limit: Vec<(u8, RateLimit)>,
     command_rx: mpsc::UnboundedReceiver<Command>,
     push_tx: mpsc::UnboundedSender<PushEvent>,
     event_tx: mpsc::UnboundedSender<WsEvent>,
@@ -132,15 +133,8 @@ pub(crate) struct Core {
     subscriptions: HashMap<String, SubFlags>,
     current_trade_days: CurrentTradeDays,
     store: Store,
-}
-
-const fn rate_limit() -> RateLimit {
-    RateLimit {
-        interval: Duration::from_millis(100),
-        initial: 5,
-        max: 5,
-        refill: 1,
-    }
+    member_id: i64,
+    quote_level: String,
 }
 
 impl Core {
@@ -158,7 +152,7 @@ impl Core {
             url = config.quote_ws_url.as_str(),
             "connecting to quote server",
         );
-        let ws_cli = WsClient::open(
+        let mut ws_cli = WsClient::open(
             config
                 .create_quote_ws_request()
                 .map_err(WsClientError::from)?,
@@ -166,17 +160,46 @@ impl Core {
             CodecType::Protobuf,
             Platform::OpenAPI,
             event_tx.clone(),
-            Some(rate_limit()),
+            vec![],
         )
         .await?;
 
         tracing::debug!(url = config.quote_ws_url.as_str(), "quote server connected");
 
         let session = ws_cli.request_auth(otp).await?;
+
+        // fetch user profile
+        let resp = ws_cli
+            .request::<_, quote::UserQuoteProfileResponse>(
+                cmd_code::QUERY_USER_QUOTE_PROFILE,
+                None,
+                quote::UserQuoteProfileRequest {},
+            )
+            .await?;
+        let member_id = resp.member_id;
+        let quote_level = resp.quote_level;
+        let rate_limit: Vec<(u8, RateLimit)> = resp
+            .rate_limit
+            .iter()
+            .map(|config| {
+                (
+                    config.command as u8,
+                    RateLimit {
+                        interval: Duration::from_secs(1),
+                        initial: config.burst as usize,
+                        max: config.burst as usize,
+                        refill: config.limit as usize,
+                    },
+                )
+            })
+            .collect();
+        ws_cli.set_rate_limit(rate_limit.clone());
+
         let current_trade_days = fetch_current_trade_days(&ws_cli).await?;
 
         Ok(Self {
             config,
+            rate_limit,
             command_rx,
             push_tx,
             event_tx,
@@ -188,7 +211,19 @@ impl Core {
             subscriptions: HashMap::new(),
             current_trade_days,
             store: Store::default(),
+            member_id,
+            quote_level,
         })
+    }
+
+    #[inline]
+    pub(crate) fn member_id(&self) -> i64 {
+        self.member_id
+    }
+
+    #[inline]
+    pub(crate) fn quote_level(&self) -> &str {
+        &self.quote_level
     }
 
     pub(crate) async fn run(mut self) {
@@ -213,7 +248,7 @@ impl Core {
                     CodecType::Protobuf,
                     Platform::OpenAPI,
                     self.event_tx.clone(),
-                    Some(rate_limit()),
+                    self.rate_limit.clone(),
                 )
                 .await
                 {
