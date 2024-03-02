@@ -44,7 +44,7 @@ jobs:
         with:
           target: "x86_64"
           manylinux: auto
-          args: -i 3.9 --release --out dist --no-sdist -m python/Cargo.toml
+          args: -i 3.9 --release --out dist -m python/Cargo.toml
       - name: Install built wheel
         run: |
           pip install longport --no-index --find-links dist --force-reinstall
