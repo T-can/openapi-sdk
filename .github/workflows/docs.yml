@@ -43,12 +43,11 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: "x86_64"
-          manylinux: auto
           args: -i python3.9 --release --out dist -m python/Cargo.toml
       - name: Install built wheel
         run: |
           pip install longport --no-index --find-links dist --force-reinstall
-          python3.9 -c "import longport"
+          python -c "import longport"
 
       - name: Build Python docs
         run: |
