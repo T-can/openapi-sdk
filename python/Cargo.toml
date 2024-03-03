@@ -1,7 +1,7 @@
 [package]
 edition = "2021"
 name = "longport-python"
-version = "1.0.13"
+version = "1.0.14"
 description = "LongPort OpenAPI SDK for Python"
 homepage = "https://open.longportapp.com/en/"
 readme = "README.md"
@@ -29,6 +29,3 @@ tokio = { version = "1.25.0", features = ["rt-multi-thread"] }
 
 [build-dependencies]
 pyo3-build-config = "0.16.4"
-
-[package.metadata.maturin]
-python-source = "pysrc"
