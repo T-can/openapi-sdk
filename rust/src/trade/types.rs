@@ -713,6 +713,9 @@ pub struct StockPosition {
     pub cost_price: Decimal,
     /// Market
     pub market: Market,
+    /// Initial position before market opening
+    #[serde(with = "serde_utils::int64_str_empty_is_none")]
+    pub init_quantity: Option<i64>,
 }
 
 /// Margin ratio
@@ -810,7 +813,8 @@ mod tests {
                     "quantity": "650",
                     "available_quantity": "-450",
                     "cost_price": "457.53",
-                    "market": "HK"
+                    "market": "HK",
+                    "init_quantity": "2000"
                   },
                   {
                     "symbol": "9991.HK",
@@ -819,7 +823,8 @@ mod tests {
                     "quantity": "200",
                     "available_quantity": "0",
                     "cost_price": "32.25",
-                    "market": "HK"
+                    "market": "HK",
+                    "init_quantity": ""
                   }
                 ]
               }
@@ -842,6 +847,7 @@ mod tests {
         assert_eq!(position.available_quantity, -450);
         assert_eq!(position.cost_price, decimal!(457.53f32));
         assert_eq!(position.market, Market::HK);
+        assert_eq!(position.init_quantity, Some(2000));
 
         let position = &channel.positions[0];
         assert_eq!(position.symbol, "700.HK");
@@ -859,6 +865,7 @@ mod tests {
         assert_eq!(position.quantity, 200);
         assert_eq!(position.available_quantity, 0);
         assert_eq!(position.cost_price, decimal!(32.25f32));
+        assert_eq!(position.init_quantity, None);
     }
 
     #[test]
