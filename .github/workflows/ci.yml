@@ -237,3 +237,107 @@ jobs:
           cargo make cmake
           cargo make c
           cargo make cpp
+
+  check-ios-cpp-sdk:
+    needs:
+      - check-format
+    strategy:
+      fail-fast: true
+      matrix:
+        settings:
+          - target: aarch64-apple-ios
+            platform: OS64
+          - target: aarch64-apple-ios-sim
+            platform: SIMULATOR64
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      - name: Install target
+        run: |
+          rustup target install ${{ matrix.settings.target }}
+
+      - name: Build C
+        working-directory: c
+        run: |
+          cargo rustc --crate-type=staticlib --target --target ${{ matrix.settings.target }}
+
+      - name: Get CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Build CPP
+        working-directory: cpp
+        run: |
+          mkdir cmake.build
+          cd cmake.build && cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=../static/toolchains/ios.cmake -DPLATFORM=${{ matrix.settings.platform }} -DDENABLE_BITCODE=true ../static && make
+
+  check-android-cpp-sdk:
+    needs:
+      - check-format
+    strategy:
+      fail-fast: true
+      matrix:
+        settings:
+          - target: armv7-linux-androideabi
+            cc: armv7a-linux-androideabi28-clang
+            cxx: armv7a-linux-androideabi28-clang++
+            ar: llvm-ar
+          - target: aarch64-linux-android
+            cc: aarch64-linux-android28-clang
+            cxx: aarch64-linux-android28-clang++
+            ar: llvm-ar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      - name: Install target
+        run: |
+          rustup target install ${{ matrix.settings.target }}
+
+      - name: Setup NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+          add-to-path: true
+
+      - name: Build C
+        working-directory: c
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          CC: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/${{ matrix.settings.cc }}
+          AR: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/${{ matrix.settings.ar }}
+        run: |
+          cargo rustc --crate-type=staticlib --target ${{ matrix.settings.target }}
+
+      - name: Get CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Build CPP
+        working-directory: cpp
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          CC: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/${{ matrix.settings.cc }}
+          CXX: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/${{ matrix.settings.cxx }}
+          AR: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/${{ matrix.settings.ar }}
+        run: |
+          mkdir cmake.build
+          cd cmake.build && cmake -DCMAKE_BUILD_TYPE=Debug ../static && make
