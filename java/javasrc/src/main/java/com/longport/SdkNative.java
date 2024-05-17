@@ -25,7 +25,7 @@ public class SdkNative {
         public static native void httpClientRequest(long httpClient, String request, AsyncCallback callback);
 
         public static native long newConfig(String appKey, String appSecret, String accessToken, String httpUrl,
-                        String quoteWsUrl, String tradeWsUrl, Language language);
+                        String quoteWsUrl, String tradeWsUrl, Language language, boolean enableOvernight);
 
         public static native long newConfigFromEnv();
 
@@ -126,6 +126,10 @@ public class SdkNative {
                         AsyncCallback callback);
 
         public static native void quoteContextUpdateWatchlistGroup(long context, UpdateWatchlistGroup req,
+                        AsyncCallback callback);
+
+        public static native void quoteContextSecurityList(long context, Market market,
+                        SecurityListCategory category,
                         AsyncCallback callback);
 
         public static native void quoteContextRealtimeQuote(long context, String[] symbols, AsyncCallback callback);

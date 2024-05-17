@@ -25,6 +25,8 @@ export interface ConfigParams {
   tradeWsUrl?: string
   /** Language identifier (default: Language.EN) */
   language?: Language
+  /** Enable overnight (default: false) */
+  enableOvernight?: boolean
 }
 /** An request to create a watchlist group */
 export interface CreateWatchlistGroup {
@@ -89,7 +91,9 @@ export const enum TradeSession {
   /** Pre-Trading */
   Pre = 1,
   /** Post-Trading */
-  Post = 2
+  Post = 2,
+  /** Overnight-Trading */
+  Overnight = 3
 }
 /** Quote type of subscription */
 export const enum SubType {
@@ -399,6 +403,11 @@ export const enum CalcIndex {
   /** Rho */
   Rho = 39
 }
+/** Security list category */
+export const enum SecurityListCategory {
+  /** Overnight */
+  Overnight = 0
+}
 /** Options for get cash flow request */
 export interface EstimateMaxPurchaseQuantityOptions {
   symbol: string
@@ -651,7 +660,9 @@ export const enum OutsideRTH {
   /** Regular trading hour only */
   RTHOnly = 1,
   /** Any time */
-  AnyTime = 2
+  AnyTime = 2,
+  /** Overnight */
+  Overnight = 3
 }
 /** Commission-free Status */
 export const enum CommissionFreeStatus {
@@ -744,6 +755,8 @@ export class Config {
    * - `LONGPORT_HTTP_URL` - HTTP endpoint url
    * - `LONGPORT_QUOTE_WS_URL` - Quote websocket endpoint url
    * - `LONGPORT_TRADE_WS_URL` - Trade websocket endpoint url
+   * - `LONGPORT_ENABLE_OVERNIGHT` - Enable overnight quote, `true` or
+   *   `false` (Default: `false`)
    */
   static fromEnv(): Config
   /**
@@ -1395,6 +1408,21 @@ export class QuoteContext {
    */
   updateWatchlistGroup(req: UpdateWatchlistGroup): Promise<void>
   /**
+   * Get security list
+   *
+   * #### Example
+   *
+   * ```javascript
+   * const { Config, QuoteContext, Market, SecurityListCategory } = require("longport")
+   *
+   * let config = Config.fromEnv();
+   * QuoteContext.new(config)
+   *   .then((ctx) => ctx.securityList(Market.US, SecurityListCategory.Overnight))
+   *   .then((resp) => console.log(resp.toString()));
+   * ```
+   */
+  securityList(market: Market, category: SecurityListCategory): Promise<Array<Security>>
+  /**
    * Get real-time quote
    *
    * #### Example
@@ -1620,6 +1648,8 @@ export class SecurityQuote {
   get preMarketQuote(): PrePostQuote | null
   /** Quote of US post market */
   get postMarketQuote(): PrePostQuote | null
+  /** Quote of US overnight market */
+  get overnightQuote(): PrePostQuote | null
 }
 /** Quote of option */
 export class OptionQuote {
@@ -2124,6 +2154,18 @@ export class SecurityCalcIndex {
   get vega(): Decimal | null
   /** Rho */
   get rho(): Decimal | null
+}
+/** Security */
+export class Security {
+  toString(): string
+  /** Security code */
+  get symbol(): string
+  /** Security name (zh-CN) */
+  get nameCn(): string
+  /** Security name (en) */
+  get nameEn(): string
+  /** Security name (zh-HK) */
+  get nameHk(): string
 }
 /** Naive date type */
 export class NaiveDate {

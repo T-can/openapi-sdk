@@ -56,6 +56,9 @@ pub enum CTradeSession {
     /// Post-Trading
     #[c(remote = "PostTrade")]
     TradeSessionPost,
+    /// Post-Trading
+    #[c(remote = "OvernightTrade")]
+    TradeSessionOvernight,
 }
 
 /// Trade direction
@@ -551,4 +554,15 @@ pub enum CWarrantStatus {
     /// Normal
     #[c(remote = "Normal")]
     WarrantStatusNormal,
+}
+
+/// Security list category
+#[derive(Debug, Copy, Clone, Eq, PartialEq, CEnum)]
+#[c(remote = "longport::quote::SecurityListCategory")]
+#[allow(clippy::enum_variant_names)]
+#[repr(C)]
+pub enum CSecurityListCategory {
+    /// Overnight
+    #[c(remote = "Overnight")]
+    SecurityListCategoryOvernight,
 }

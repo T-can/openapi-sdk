@@ -50,10 +50,10 @@ JNIEXPORT void JNICALL Java_com_longport_SdkNative_httpClientRequest
 /*
  * Class:     com_longport_SdkNative
  * Method:    newConfig
- * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/longport/Language;)J
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/longport/Language;Z)J
  */
 JNIEXPORT jlong JNICALL Java_com_longport_SdkNative_newConfig
-  (JNIEnv *, jclass, jstring, jstring, jstring, jstring, jstring, jstring, jobject);
+  (JNIEnv *, jclass, jstring, jstring, jstring, jstring, jstring, jstring, jobject, jboolean);
 
 /*
  * Class:     com_longport_SdkNative
@@ -390,6 +390,14 @@ JNIEXPORT void JNICALL Java_com_longport_SdkNative_quoteContextDeleteWatchlistGr
  */
 JNIEXPORT void JNICALL Java_com_longport_SdkNative_quoteContextUpdateWatchlistGroup
   (JNIEnv *, jclass, jlong, jobject, jobject);
+
+/*
+ * Class:     com_longport_SdkNative
+ * Method:    quoteContextSecurityList
+ * Signature: (JLcom/longport/Market;Lcom/longport/quote/SecurityListCategory;Lcom/longport/AsyncCallback;)V
+ */
+JNIEXPORT void JNICALL Java_com_longport_SdkNative_quoteContextSecurityList
+  (JNIEnv *, jclass, jlong, jobject, jobject, jobject);
 
 /*
  * Class:     com_longport_SdkNative

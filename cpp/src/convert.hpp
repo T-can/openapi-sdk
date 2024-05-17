@@ -37,10 +37,12 @@ using longport::quote::PushQuote;
 using longport::quote::PushTrades;
 using longport::quote::RealtimeQuote;
 using longport::quote::SecuritiesUpdateMode;
+using longport::quote::Security;
 using longport::quote::SecurityBoard;
 using longport::quote::SecurityBrokers;
 using longport::quote::SecurityCalcIndex;
 using longport::quote::SecurityDepth;
+using longport::quote::SecurityListCategory;
 using longport::quote::SecurityQuote;
 using longport::quote::SecurityStaticInfo;
 using longport::quote::SortOrderType;
@@ -362,6 +364,7 @@ convert(const lb_security_quote_t* info)
     convert(info->trade_status),
     convert(info->pre_market_quote),
     convert(info->post_market_quote),
+    convert(info->overnight_quote),
   };
 }
 
@@ -477,6 +480,8 @@ convert(lb_trade_session_t ty)
       return TradeSession::Pre;
     case TradeSessionPost:
       return TradeSession::Post;
+    case TradeSessionOvernight:
+      return TradeSession::Overnight;
     default:
       throw std::invalid_argument("unreachable");
   }
@@ -1159,6 +1164,8 @@ convert(lb_outside_rth_t status)
       return OutsideRTH::RTHOnly;
     case OutsideRTHAnyTime:
       return OutsideRTH::AnyTime;
+    case OutsideRTHOvernight:
+      return OutsideRTH::Overnight;
     default:
       throw std::invalid_argument("unreachable");
   }
@@ -1174,6 +1181,8 @@ convert(OutsideRTH status)
       return OutsideRTHOnly;
     case OutsideRTH::AnyTime:
       return OutsideRTHAnyTime;
+    case OutsideRTH::Overnight:
+      return OutsideRTHOvernight;
     default:
       throw std::invalid_argument("unreachable");
   }
@@ -1992,6 +2001,28 @@ convert(lb_warrant_info_t info)
     info.balance_point ? std::optional{ Decimal(info.balance_point) }
                        : std::nullopt,
     convert(info.status),
+  };
+}
+
+inline lb_security_list_category_t
+convert(SecurityListCategory category)
+{
+  switch (category) {
+    case SecurityListCategory::Overnight:
+      return SecurityListCategoryOvernight;
+    default:
+      throw std::invalid_argument("unreachable");
+  }
+}
+
+inline Security
+convert(const lb_security_t* info)
+{
+  return Security{
+    info->symbol,
+    info->name_cn,
+    info->name_en,
+    info->name_hk,
   };
 }
 

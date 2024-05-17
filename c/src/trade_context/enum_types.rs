@@ -213,6 +213,9 @@ pub enum COutsideRTH {
     /// Any time
     #[c(remote = "AnyTime")]
     OutsideRTHAnyTime,
+    /// Overnight
+    #[c(remote = "Overnight")]
+    OutsideRTHOvernight,
 }
 
 /// Time in force Type

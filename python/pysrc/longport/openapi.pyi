@@ -85,6 +85,7 @@ class Config:
         quote_ws_url: Websocket url for quote API
         trade_ws_url: Websocket url for trade API
         language: Language identifier
+        enable_overnight: Enable overnight quote
     """
 
     def __init__(
@@ -96,6 +97,7 @@ class Config:
         quote_ws_url: Optional[str] = None,
         trade_ws_url: Optional[str] = None,
         language: Optional[Type[Language]] = None,
+        enable_overnight: bool = False,
     ) -> None: ...
 
     @classmethod
@@ -113,6 +115,7 @@ class Config:
         - `LONGPORT_HTTP_URL` - HTTP endpoint url
         - `LONGPORT_QUOTE_WS_URL` - Quote websocket endpoint url
         - `LONGPORT_TRADE_WS_URL` - Trade websocket endpoint url
+        - `LONGPORT_ENABLE_OVERNIGHT` - Enable overnight quote, `true` or `false` (Default: `false`)
         """
 
     def refresh_access_token(self, expired_at: Optional[datetime] = None) -> str:
@@ -460,6 +463,40 @@ class SecurityBoard:
         SG Industry Board
         """
 
+class Security:
+    """
+    Security
+    """
+
+    symbol: str
+    """
+    Security code
+    """
+
+    name_cn: str
+    """
+    Security name (zh-CN)
+    """
+
+    name_en: str
+    """
+    Security name (en)
+    """
+
+    name_hk: str
+    """
+    Security name (zh-HK)
+    """
+
+class SecurityListCategory:
+    """
+    Security list category
+    """
+
+    class Overnight(SecurityListCategory):
+        """
+        Overnight
+        """
 
 class SecurityStaticInfo:
     """
@@ -712,6 +749,11 @@ class SecurityQuote:
     post_market_quote: Optional[PrePostQuote]
     """
     Quote of US post market
+    """
+
+    overnight_quote: Optional[PrePostQuote]
+    """
+    Quote of US overnight market
     """
 
 
@@ -2511,6 +2553,7 @@ class QuoteContext:
                 def on_candlestick(symbol: str, event: PushCandlestick):
                     print(symbol, event)
 
+                ctx.set_on_candlestick(on_candlestick)
                 ctx.subscribe_candlesticks("700.HK", Period.Min_1)
                 sleep(30)
         """
@@ -3058,6 +3101,29 @@ class QuoteContext:
                 config = Config.from_env()
                 ctx = QuoteContext(config)
                 ctx.update_watchlist_group(10086, name = "Watchlist2", securities = ["700.HK", "AAPL.US"], SecuritiesUpdateMode.Replace)
+        """
+
+    def security_list(self, market: Type[Market], category: Type[SecurityListCategory]) -> List[Security]:
+        """
+        Get security list
+
+        Args:
+            market: Market
+            category: Security list category
+
+        Returns:
+            Security list
+
+        Examples:
+            ::
+
+                from longport.openapi import QuoteContext, Config, Market, SecurityListCategory
+
+                config = Config.from_env()
+                ctx = QuoteContext(config)
+
+                resp = ctx.security_list(Market.HK, SecurityListCategory.Overnight)
+                print(resp)
         """
 
     def realtime_quote(self, symbols: List[str]) -> List[RealtimeQuote]:
@@ -3691,6 +3757,10 @@ class OutsideRTH:
         Any time
         """
 
+    class Overnight(OutsideRTH):
+        """
+        Overnight
+        """
 
 class Order:
     """

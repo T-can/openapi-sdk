@@ -159,6 +159,8 @@ enum class TradeSession
   Pre,
   /// Post-Trading
   Post,
+  /// Overnight-Trading
+  Overnight,
 };
 
 /// Quote message
@@ -284,6 +286,19 @@ enum class SecurityBoard
   SGSector,
 };
 
+/// Security
+struct Security
+{
+  /// Security code
+  std::string symbol;
+  /// Security name (zh-CN)
+  std::string name_cn;
+  /// Security name (en)
+  std::string name_en;
+  /// Security name (zh-HK)
+  std::string name_hk;
+};
+
 /// The basic information of securities
 struct SecurityStaticInfo
 {
@@ -394,6 +409,8 @@ struct SecurityQuote
   std::optional<PrePostQuote> pre_market_quote;
   /// Quote of US post market
   std::optional<PrePostQuote> post_market_quote;
+  /// Quote of US overnight market
+  std::optional<PrePostQuote> overnight_quote;
 };
 
 /// Option type
@@ -1120,6 +1137,13 @@ struct WarrantInfo
   WarrantStatus status;
 };
 
+/// Security list category
+enum class SecurityListCategory
+{
+  /// Overnight
+  Overnight,
+};
+
 } // namespace quote
 
 namespace trade {
@@ -1307,6 +1331,8 @@ enum class OutsideRTH
   RTHOnly,
   /// Any time
   AnyTime,
+  /// Overnight
+  Overnight,
 };
 
 /// Order

@@ -45,7 +45,7 @@ impl_java_enum!(
 impl_java_enum!(
     "com/longport/quote/TradeSession",
     longport::quote::TradeSession,
-    [NormalTrade, PreTrade, PostTrade]
+    [NormalTrade, PreTrade, PostTrade, OvernightTrade]
 );
 
 impl_java_enum!(
@@ -290,6 +290,12 @@ impl_java_enum!(
 );
 
 impl_java_enum!(
+    "com/longport/quote/SecurityListCategory",
+    longport::quote::SecurityListCategory,
+    [Overnight]
+);
+
+impl_java_enum!(
     "com/longport/trade/OrderSide",
     longport::trade::OrderSide,
     [Unknown, Buy, Sell]
@@ -364,7 +370,7 @@ impl_java_enum!(
 impl_java_enum!(
     "com/longport/trade/OutsideRTH",
     longport::trade::OutsideRTH,
-    [Unknown, RTHOnly, AnyTime]
+    [Unknown, RTHOnly, AnyTime, Overnight]
 );
 
 impl_java_enum!(
