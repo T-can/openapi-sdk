@@ -12,8 +12,6 @@ add_library(
     longport_cpp SHARED
     ${SOURCES}
 )
-if(NOT CMAKE_HOST_LINUX)
-target_link_libraries(longport_cpp longport-c)
-endif()
+target_link_libraries(longport_cpp longport_c)
 
 add_subdirectory(test)

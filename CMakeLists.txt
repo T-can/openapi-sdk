@@ -15,7 +15,7 @@ include(FetchContent)
 fetchcontent_declare(
     Corrosion
     GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-    GIT_TAG v0.2.1
+    GIT_TAG v0.5.0
 )
 fetchcontent_makeavailable(Corrosion)
 
@@ -31,6 +31,7 @@ add_subdirectory(examples/c/http_client)
 
 add_subdirectory(examples/cpp/submit_order)
 add_subdirectory(examples/cpp/subscribe_quote)
+add_subdirectory(examples/cpp/subscribe_candlesticks)
 add_subdirectory(examples/cpp/get_quote)
 add_subdirectory(examples/cpp/today_orders)
 add_subdirectory(examples/cpp/http_client)

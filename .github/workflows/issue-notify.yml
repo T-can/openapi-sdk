@@ -1,7 +1,7 @@
 name: Issue Notify
 on:
   issues:
-    types: [opened, edited]
+    types: [opened]
 
 jobs:
   notify:
@@ -13,6 +13,6 @@ jobs:
           msg_type: text
           content: |
             text: |
-              GitHub: ${{ github.event.issue.title }} #${{ github.event.issue.number }}
+              ${{ github.event.issue.title }} #${{ github.event.issue.number }}
 
               ${{ github.event.issue.html_url }}
