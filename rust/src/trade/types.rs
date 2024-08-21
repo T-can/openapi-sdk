@@ -560,6 +560,9 @@ pub struct AccountBalance {
     /// Maintenance margin
     #[serde(with = "serde_utils::decimal_empty_is_0")]
     pub maintenance_margin: Decimal,
+    /// Buy power
+    #[serde(with = "serde_utils::decimal_empty_is_0")]
+    pub buy_power: Decimal,
 }
 
 /// Balance type
@@ -959,7 +962,8 @@ mod tests {
                 ],
                 "net_assets": "11111.12",
                 "init_margin": "2222.23",
-                "maintenance_margin": "3333.45"
+                "maintenance_margin": "3333.45",
+                "buy_power": "1234.67"
               }
             ]
           }"#;
@@ -982,6 +986,7 @@ mod tests {
         assert_eq!(balance.net_assets, "11111.12".parse().unwrap());
         assert_eq!(balance.init_margin, "2222.23".parse().unwrap());
         assert_eq!(balance.maintenance_margin, "3333.45".parse().unwrap());
+        assert_eq!(balance.buy_power, "1234.67".parse().unwrap());
 
         assert_eq!(balance.cash_infos.len(), 2);
 
