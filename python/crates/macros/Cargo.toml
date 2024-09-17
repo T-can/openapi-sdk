@@ -1,6 +1,6 @@
 [package]
 name = "longport-python-macros"
-version = "1.0.33"
+version = "1.0.34"
 edition = "2021"
 
 [lib]
@@ -9,6 +9,6 @@ proc-macro = true
 [dependencies]
 proc-macro2 = "1.0.29"
 quote = "1.0.9"
-syn = { version = "1.0.77", features = [] }
-darling = "0.14.0"
+syn = { version = "2.0.77", features = [] }
+darling = "0.20.10"
 thiserror = "1.0.29"
