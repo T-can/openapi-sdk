@@ -46,6 +46,21 @@ public class HttpClient implements AutoCloseable {
     /**
      * Performs a HTTP request
      * 
+     * @param <T>       Response class type
+     * @param respClass Response class object, it can be null
+     * @param method    HTTP method, e.g. get, post
+     * @param path      Request path
+     * @return A Future representing the result of the operation
+     * @throws RuntimeException If an error occurs
+     */
+    public <T> CompletableFuture<T> request(Class<T> respClass, String method, String path)
+            throws RuntimeException {
+        return doRequest(respClass, method, path, null, null);
+    }
+
+    /**
+     * Performs a HTTP request with body
+     * 
      * @param <T>         Response class type
      * @param respClass   Response class object, it can be null
      * @param method      HTTP method, e.g. get, post
@@ -56,6 +71,30 @@ public class HttpClient implements AutoCloseable {
      */
     public <T> CompletableFuture<T> request(Class<T> respClass, String method, String path, Object requestBody)
             throws RuntimeException {
+        return doRequest(respClass, method, path, requestBody, null);
+    }
+
+    /**
+     * Performs a HTTP request with headers
+     * 
+     * @param <T>         Response class type
+     * @param respClass   Response class object, it can be null
+     * @param method      HTTP method, e.g. get, post
+     * @param path        Request path
+     * @param requestBody Request body, it can be null
+     * @param headers     Request headers, it can be null
+     * @return A Future representing the result of the operation
+     * @throws RuntimeException
+     */
+    public <T> CompletableFuture<T> request(Class<T> respClass, String method, String path, Object requestBody,
+            HashMap<String, String> headers)
+            throws RuntimeException {
+        return doRequest(respClass, method, path, requestBody, headers);
+    }
+
+    private <T> CompletableFuture<T> doRequest(Class<T> respClass, String method, String path, Object requestBody,
+            HashMap<String, String> headers)
+            throws RuntimeException {
         Gson gson = new Gson();
         HashMap<String, Object> request = new HashMap<String, Object>();
 
@@ -64,6 +103,10 @@ public class HttpClient implements AutoCloseable {
 
         if (requestBody != null) {
             request.put("data", requestBody);
+        }
+
+        if (headers != null) {
+            request.put("headers", headers);
         }
 
         String requestJson = gson.toJson(request);
